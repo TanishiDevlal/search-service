@@ -1,12 +1,17 @@
 export default class PaginationDto {
-    constructor(rows, count, page, size) {
-        this.items = rows;
-        this.page = page;
-        this.size = size;
-        this.totalItems = count;
-        this.totalPages = Math.ceil(count / size);
-    }
-    static from(result, page, size) {
-        return new PaginationDto(result.rows, result.count, page, size);
+    constructor({
+        content = [],
+        pageNumber = 0,
+        pageSize = 10,
+        totalElements = 0,
+        totalPages = 0,
+        last = false
+    } = {}) {
+        this.content = content;
+        this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
+        this.totalElements = totalElements;
+        this.totalPages = totalPages;
+        this.last = last;
     }
 }

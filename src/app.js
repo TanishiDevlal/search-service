@@ -13,11 +13,8 @@ import redis from './utils/redis.js';
 import FleetRoute from './modules/routes/fleet.route.js';
 import ResponseDto from './core/ResponseDto.js';
 
-// Initialize Express
 const app = express();
 app.disable('x-powered-by');
-
-// ─── 1. Logging & Metrics Setup ─────────────────────────────
 
 function getPinoLevelName(level) {
     if (level >= 50) {
@@ -69,9 +66,6 @@ function initializeMetrics() {
     metricsInitialized = true;
 }
 
-// ─── 2. Global Middleware Pipeline (§1.5) ───────────────────
-
-// Correlation & Request Logging
 app.use(pinoHttp({
     logger,
     customLogLevel(req, res, err) {
@@ -87,7 +81,6 @@ app.use(pinoHttp({
     }
 }));
 
-// Request Timer & OTel Request Metrics
 app.use((req, res, next) => {
     const startedAt = Date.now();
 
@@ -137,7 +130,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// CORS Configuration
 const corsConfig = {
     origin: '*',
     credentials: false,
@@ -145,11 +137,9 @@ const corsConfig = {
 };
 app.use(cors(corsConfig));
 
-// Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ─── 3. Health & Probes Endpoints (§1.5 step 6 & Day 1) ──────
 
 app.get('/health', async (req, res) => {
     const result = {
@@ -200,11 +190,7 @@ app.get('/health/ready', async (_req, res) => {
     }
 });
 
-// ─── 4. Search API Routes (§1.5 step 7) ──────────────────────
-
-app.use('/api/fleet', FleetRoute);
-
-// ─── 5. Diagnostics & Root ───────────────────────────────────
+app.use('/api/search/fleet', FleetRoute);
 
 app.get('/', (req, res) => {
     tracer.startActiveSpan('GET /', (span) => {
@@ -259,13 +245,10 @@ app.get('/metrics', (_req, res) => {
     res.status(200).send('Metrics are exported via OTLP to OpenTelemetry Collector.');
 });
 
-// ─── 6. 404 Fallback Handler (§1.5 step 8) ───────────────────
 
 app.use((_req, res) => {
     res.status(404).json(ResponseDto.error('Not Found', 404));
 });
-
-// ─── 7. Global Error Handler (§1.5 step 9) ───────────────────
 
 app.use((err, req, res, _next) => {
     if (req.log) {

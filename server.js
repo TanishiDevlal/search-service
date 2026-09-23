@@ -12,12 +12,9 @@ async function bootstrap() {
     otelEndpoint: telemetryConfig.otelEndpoint
   }, 'OpenTelemetry connected to search-service bootstrap');
 
-  // Dynamic import so telemetry is ready before any instrumented modules load
   const { default: app, initializeMetrics } = await import('./src/app.js');
 
   initializeMetrics();
-
-  // Authenticate DB (fail-fast: missing/wrong credentials crash the container)
   const db = (await import('./src/modules/models/DbSetup.js')).default;
   await db.sequelize.authenticate();
   logger.info({
@@ -25,10 +22,13 @@ async function bootstrap() {
     database: db.sequelize.config.database
   }, 'PostgreSQL connected (read-only on commerce schema)');
 
-  // Connect Redis (fail-fast)
-  const redis = (await import('./src/utils/redis.js')).default;
-  if (!redis.isOpen) await redis.connect();
-  logger.info('Redis connected');
+  try {
+    const redis = (await import('./src/utils/redis.js')).default;
+    if (!redis.isOpen) await redis.connect();
+    logger.info('Redis connected');
+  } catch (err) {
+    logger.warn({ err: err.message }, '⚠️ Redis connection failed on startup, running in degraded DB-fallback mode');
+  }
 
   server = app.listen(PORT, () => {
     logger.info({ port: PORT, env: process.env.NODE_ENV || 'development' },
@@ -39,12 +39,10 @@ async function bootstrap() {
 async function shutdown(signal) {
   logger.info({ signal }, 'Graceful shutdown initiated');
 
-  // 1. Stop accepting new connections
   if (server) {
     server.close(() => logger.info('HTTP server closed'));
   }
 
-  // 2. Disconnect Redis
   try {
     const redis = (await import('./src/utils/redis.js')).default;
     if (redis.isOpen) await redis.quit();
@@ -53,7 +51,6 @@ async function shutdown(signal) {
     logger.warn({ err: err.message }, 'Redis disconnect error (non-fatal)');
   }
 
-  // 3. Close Sequelize connection pool
   try {
     const { sequelize } = await import('./src/config/database.js');
     await sequelize.close();
@@ -62,7 +59,6 @@ async function shutdown(signal) {
     logger.warn({ err: err.message }, 'Sequelize close error (non-fatal)');
   }
 
-  // 4. Flush & stop OpenTelemetry
   await stopTelemetry();
   process.exit(0);
 }

@@ -20,7 +20,7 @@ class FleetController extends BaseController {
 
     async getDimensions(req, res) {
         try {
-            const page = parseInt(req.query.page, 10) || 1;
+            const page = parseInt(req.query.page, 10) || 0;
             const size = parseInt(req.query.size, 10) || 10;
             const data = await this.fleetService.getDimensions(page, size);
             return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.FLEET.DIMENSIONS_FETCHED, data);
@@ -44,36 +44,29 @@ class FleetController extends BaseController {
         }
     }
 
-    async getMachineDetailv1(req, res) {
+    async getCategoryDetail(req, res) {
         try {
-            const { id } = req.params;
-            const data = await this.fleetService.getMachineDetailv1(id);
+            const { machineType } = req.params;
+            const data = await this.fleetService.getCategoryDetail(machineType);
 
-            if (!data) {
+            if (!data || (Array.isArray(data) && data.length === 0)) {
                 return this.sendResponse(res, HTTP_STATUS.NOT_FOUND, RESPONSE_MESSAGES.COMMON.NOT_FOUND, null);
             }
 
-            return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.FLEET.MACHINE_DETAIL_FETCHED, data);
+            return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.FLEET.CATEGORY_DETAIL_FETCHED, data);
         } catch (error) {
             return this.handleError(res, error);
         }
     }
 
-    async getDimensionPrice(req, res) {
+    async searchMachines(req, res) {
         try {
-            const { id } = req.params;
-            const data = await this.fleetService.getDimensionPrice(id);
-            return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.FLEET.DIMENSION_PRICE_FETCHED, data);
-        } catch (error) {
-            return this.handleError(res, error);
-        }
-    }
+            const keyword = (req.query.keyword || '').trim();
+            const page = parseInt(req.query.page, 10) || 0;
+            const size = parseInt(req.query.size, 10) || 10;
 
-    async createSearchModel(req, res) {
-        try {
-            const filters = req.body || {};
-            const data = await this.fleetService.searchFleets(filters);
-            return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.FLEET.SEARCH_RESULTS, data);
+            const data = await this.fleetService.searchMachines(keyword, page, size);
+            return this.sendResponse(res, HTTP_STATUS.OK, RESPONSE_MESSAGES.COMMON.FETCHED, data);
         } catch (error) {
             return this.handleError(res, error);
         }

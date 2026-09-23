@@ -1,12 +1,6 @@
 import { DataTypes } from 'sequelize';
 
-/**
- * AbstractModel - Base class with common fields and hooks for all models
- */
 class AbstractModel {
-    /**
-     * Returns common field definitions
-     */
     static getModelDefinition() {
         return {
             uuid: {
@@ -36,9 +30,6 @@ class AbstractModel {
         };
     }
 
-    /**
-     * Returns default model options including hooks
-     */
     static getModelOptions() {
         return {
             timestamps: false,
@@ -51,9 +42,6 @@ class AbstractModel {
         };
     }
 
-    /**
-     * Initialize model with custom fields and options
-     */
     static initModel(sequelize, modelDefinition = {}, modelOptions = {}) {
         const definition = {
             ...this.getModelDefinition(),

@@ -11,7 +11,7 @@ export const RESPONSE_MESSAGES = {
         ALL_FETCHED: 'All fleets fetched successfully',
         DIMENSIONS_FETCHED: 'Dimensions fetched successfully',
         MACHINE_DETAIL_FETCHED: 'Machine detail fetched successfully',
-        DIMENSION_PRICE_FETCHED: 'Dimension price fetched successfully',
+        CATEGORY_DETAIL_FETCHED: 'Category detail fetched successfully',
         SEARCH_RESULTS: 'Search results fetched successfully'
     }
 };
