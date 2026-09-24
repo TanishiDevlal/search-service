@@ -75,12 +75,17 @@ const env = Object.freeze({
         schema: optional('SCHEMA', 'commerce'),
         ssl: dbSsl
     },
-    
+
     redis: {
         url: optional('REDIS_URL', undefined),
         host: optional('REDIS_HOST', '127.0.0.1'),
         port: integer('REDIS_PORT', 6379),
         tls: boolean('REDIS_TLS', false)
+    },
+
+    config: {
+        suggestedMachinesUrl: optional('SUGGESTED_MACHINES', 'https://appconfig.liftkaro.com/app-config/customer-config/machine-list-config.json'),
+        serviceAvailableZonesUrl: optional('SERVICE_AVAILABLE_ZONES', 'https://appconfig.liftkaro.com/app-config/partner-config/service-available-zone.json')
     }
 });
 
