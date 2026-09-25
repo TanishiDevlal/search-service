@@ -1,6 +1,7 @@
 import db from '../models/DbSetup.js';
 import { Op } from 'sequelize';
 import Utils from '../../utils/Utils.js';
+import PaginationDto from '../dtos/PaginationDto.js';
 
 class FleetSearchRepository {
 
@@ -57,14 +58,14 @@ class FleetSearchRepository {
         const endIndex = startIndex + limit;
         const paginatedContent = machineList.slice(startIndex, endIndex);
 
-        return {
+        return new PaginationDto({
             content: paginatedContent,
             pageNumber,
             pageSize: limit,
             totalElements,
             totalPages,
             last: totalPages === 0 ? true : pageNumber >= totalPages - 1
-        };
+        });
     }
 
     async getCategoriesBySubcategory(machineType) {
@@ -95,14 +96,14 @@ class FleetSearchRepository {
 
         if (Array.isArray(availableVariantIds)) {
             if (availableVariantIds.length === 0) {
-                return {
+                return new PaginationDto({
                     content: [],
                     pageNumber,
                     pageSize: limit,
                     totalElements: 0,
                     totalPages: 0,
                     last: true
-                };
+                });
             }
             whereClause.uuid = { [Op.in]: availableVariantIds };
         }
@@ -150,14 +151,14 @@ class FleetSearchRepository {
         const totalElements = result.count;
         const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / limit);
 
-        return {
+        return new PaginationDto({
             content,
             pageNumber,
             pageSize: limit,
             totalElements,
             totalPages,
             last: totalPages === 0 ? true : pageNumber >= totalPages - 1
-        };
+        });
     }
 }
 

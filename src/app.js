@@ -10,6 +10,7 @@ import { logger as otelLogger, bypassOtelLog } from './telemetry.js';
 import { env } from './config/env.js';
 import db from './modules/models/DbSetup.js';
 import redis from './utils/redis.js';
+import { SERVER_CONFIG } from './core/Constants.js';
 import FleetRoute from './modules/routes/fleet.route.js';
 import ResponseDto from './core/ResponseDto.js';
 
@@ -131,7 +132,7 @@ app.use((req, res, next) => {
 });
 
 const corsConfig = {
-    origin: '*',
+    origin: SERVER_CONFIG.CORS_ORIGIN,
     credentials: false,
     optionsSuccessStatus: 200
 };
